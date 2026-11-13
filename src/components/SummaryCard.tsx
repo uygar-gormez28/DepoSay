@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { CheckCircle2, Clock, PackageCheck, Layers, ArrowRight } from "lucide-react";
+import { CheckCircle2, Clock, PackageCheck, Layers, ArrowRight, FileText } from "lucide-react";
 import { Brand } from "@/types";
 import { TARGET_DELIVERY_COUNT } from "@/lib/delivery";
 
@@ -9,18 +9,23 @@ interface SummaryCardProps {
   brands: Brand[];
   totalCount: number;
   onOpenDeliveryModal: () => void;
+  onOpenDeliveryListModal: () => void;
 }
 
 export function SummaryCard({
   brands,
   totalCount,
   onOpenDeliveryModal,
+  onOpenDeliveryListModal,
 }: SummaryCardProps) {
   const remaining = Math.max(0, TARGET_DELIVERY_COUNT - totalCount);
   const isReady = totalCount >= TARGET_DELIVERY_COUNT;
   const overflow = Math.max(0, totalCount - TARGET_DELIVERY_COUNT);
 
-  const deliveryBrands = brands.filter((b) => (b.deliveryCount || 0) > 0);
+  const deliveryBrands = brands
+    .filter((b) => (b.deliveryCount || 0) > 0)
+    .sort((a, b) => (b.deliveryCount || 0) - (a.deliveryCount || 0));
+
   const totalInDelivery = deliveryBrands.reduce(
     (sum, b) => sum + (b.deliveryCount || 0),
     0
@@ -91,8 +96,8 @@ export function SummaryCard({
           </div>
         </div>
 
-        {/* Right: Status Pill & Delivery Action Button */}
-        <div className="flex items-center gap-3 self-start lg:self-center shrink-0">
+        {/* Right: Status Pill & Delivery Action Buttons */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 self-start lg:self-center shrink-0">
           {isReady && (
             <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#172235] text-[#F8FAFC] border border-[#334155]">
               <CheckCircle2 className="w-3.5 h-3.5 text-white" />
@@ -100,10 +105,28 @@ export function SummaryCard({
             </div>
           )}
 
+          {/* Liste Al Button */}
           <button
+            type="button"
+            onClick={onOpenDeliveryListModal}
+            disabled={totalInDelivery === 0}
+            className={`px-3.5 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all border ${
+              totalInDelivery > 0
+                ? "bg-[#172235] hover:bg-[#334155] text-white border-[#334155] active:scale-95 cursor-pointer shadow-xs"
+                : "bg-[#172235]/40 text-[#94A3B8]/40 border-[#334155]/40 cursor-not-allowed opacity-50"
+            }`}
+            title="Teslimat listesini görüntüle, yazdır veya kopyala"
+          >
+            <FileText className="w-4 h-4 text-[#94A3B8]" />
+            <span>Liste Al</span>
+          </button>
+
+          {/* 200 Şişe Teslim Et Button */}
+          <button
+            type="button"
             onClick={onOpenDeliveryModal}
             disabled={!isReady}
-            className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
+            className={`px-4 sm:px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
               isReady
                 ? "bg-white hover:bg-slate-100 text-[#101827] shadow-lg shadow-black/20 active:scale-95 cursor-pointer"
                 : "bg-[#172235] text-[#94A3B8]/60 border border-[#334155]/60 cursor-not-allowed opacity-50"

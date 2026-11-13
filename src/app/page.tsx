@@ -6,6 +6,7 @@ import { BrandList } from "@/components/BrandList";
 import { AddEditBrandModal, normalizeBrandName } from "@/components/AddEditBrandModal";
 import { DeleteConfirmModal } from "@/components/DeleteConfirmModal";
 import { DeliveryModal } from "@/components/DeliveryModal";
+import { DeliveryListModal } from "@/components/DeliveryListModal";
 import { ToastContainer } from "@/components/Toast";
 import { Brand, Toast } from "@/types";
 import { getStoredBrands, saveStoredBrands } from "@/lib/storage";
@@ -28,6 +29,7 @@ export default function Home() {
   const [deletingBrand, setDeletingBrand] = useState<Brand | null>(null);
 
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
+  const [isDeliveryListOpen, setIsDeliveryListOpen] = useState(false);
 
   // Load from localStorage on mount (prevents hydration mismatch)
   useEffect(() => {
@@ -151,7 +153,7 @@ export default function Home() {
   return (
     <div className="min-h-screen text-[#F8FAFC] flex flex-col selection:bg-white selection:text-[#101827]">
       {/* Main Container - Extended width: ~1100-1150px on desktop */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 space-y-6 sm:space-y-7">
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-14 space-y-6 sm:space-y-7 print:hidden">
         {/* Centered Modern Page Title */}
         <div className="text-center pt-2 pb-1">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
@@ -164,6 +166,7 @@ export default function Home() {
           brands={brands}
           totalCount={totalCount}
           onOpenDeliveryModal={() => setIsDeliveryOpen(true)}
+          onOpenDeliveryListModal={() => setIsDeliveryListOpen(true)}
         />
 
         {/* Bottom Section: 4-Column Grid Brand Cards */}
@@ -186,7 +189,7 @@ export default function Home() {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 text-center text-xs text-[#94A3B8] border-t border-[#334155]/60 bg-[#101827]/40 backdrop-blur-xs">
+      <footer className="py-6 text-center text-xs text-[#94A3B8] border-t border-[#334155]/60 bg-[#101827]/40 backdrop-blur-xs print:hidden">
         <p>DOA Depozito Şişe Takip &bull; Veriler tarayıcınızda (localStorage) saklanır</p>
       </footer>
 
@@ -219,8 +222,17 @@ export default function Home() {
         onConfirmDelivery={handleConfirmDelivery}
       />
 
+      <DeliveryListModal
+        isOpen={isDeliveryListOpen}
+        onClose={() => setIsDeliveryListOpen(false)}
+        brands={brands}
+        onToast={addToast}
+      />
+
       {/* Toast Notifications */}
-      <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      <div className="print:hidden">
+        <ToastContainer toasts={toasts} onDismiss={dismissToast} />
+      </div>
     </div>
   );
 }

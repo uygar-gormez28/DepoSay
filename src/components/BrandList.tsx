@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Plus, Search, Layers, X } from "lucide-react";
 import { Brand } from "@/types";
 import { BrandCard } from "./BrandCard";
@@ -22,9 +22,28 @@ export function BrandList({
 }: BrandListProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredBrands = brands.filter((b) =>
-    b.name.toLowerCase().includes(searchQuery.trim().toLowerCase())
-  );
+  // 1. Sort brands descending by stock count (b.count)
+  // Stable sort: preserves relative order when counts are equal
+  const sortedBrands = useMemo(() => {
+    return brands
+      .map((b, index) => ({ b, index }))
+      .sort((a, b) => {
+        const diff = (b.b.count || 0) - (a.b.count || 0);
+        if (diff !== 0) return diff;
+        return a.index - b.index;
+      })
+      .map((item) => item.b);
+  }, [brands]);
+
+  // 2. Filter from the sorted list using Turkish-aware comparison
+  // Ensures search results also maintain stock count descending order
+  const filteredBrands = useMemo(() => {
+    const query = searchQuery.trim().toLocaleLowerCase("tr-TR");
+    if (!query) return sortedBrands;
+    return sortedBrands.filter((b) =>
+      b.name.toLocaleLowerCase("tr-TR").includes(query)
+    );
+  }, [sortedBrands, searchQuery]);
 
   return (
     <div className="space-y-4">
